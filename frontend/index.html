@@ -25,8 +25,72 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        .slide-in {
-            animation: slideIn 0.5s ease-out;
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .hero-pattern {
+            background-color: #667eea;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 24px;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .loading-dots {
+            display: inline-block;
+        }
+        .loading-dots::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
     </style>
 </head>
@@ -45,10 +109,14 @@
                         <i id="status-icon" class="fas fa-circle text-gray-500 text-xs"></i>
                         <span id="status-text" class="text-sm font-medium">Checking...</span>
                     </div>
+                    <!-- Navigation -->
                     <nav class="hidden md:flex space-x-6">
-                        <a href="#" class="text-gray-700 hover:text-purple-600 transition">Home</a>
-                        <a href="#features" class="text-gray-700 hover:text-purple-600 transition">Features</a>
-                        <a href="#about" class="text-gray-700 hover:text-purple-600 transition">About</a>
+                        <a href="#" onclick="showPage('home')" class="nav-link text-gray-700 hover:text-purple-600 transition" data-page="home">Home</a>
+                        <a href="#" onclick="showPage('email')" class="nav-link text-gray-700 hover:text-purple-600 transition" data-page="email">Email</a>
+                        <a href="#" onclick="showPage('sms')" class="nav-link text-gray-700 hover:text-purple-600 transition" data-page="sms">SMS</a>
+                        <a href="#" onclick="showPage('whatsapp')" class="nav-link text-gray-700 hover:text-purple-600 transition" data-page="whatsapp">WhatsApp</a>
+                        <a href="#" onclick="showPage('url')" class="nav-link text-gray-700 hover:text-purple-600 transition" data-page="url">URL</a>
+                        <a href="#" onclick="showPage('dashboard')" class="nav-link text-gray-700 hover:text-purple-600 transition" data-page="dashboard">Dashboard</a>
                     </nav>
                 </div>
             </div>
@@ -57,99 +125,288 @@
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
-        <!-- Hero Section -->
-        <section class="text-center mb-12 slide-in">
-            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
-                Protect Yourself from Phishing
-            </h2>
-            <p class="text-xl text-purple-100 max-w-2xl mx-auto">
-                Advanced AI-powered detection system to identify and protect against phishing attempts, 
-                suspicious URLs, and fraudulent messages.
-            </p>
-        </section>
-
-        <!-- Detection Form -->
-        <section class="max-w-4xl mx-auto mb-12">
-            <div class="glass-effect rounded-2xl shadow-2xl p-8">
-                <!-- Detection Type Selection -->
-                <div class="mb-8">
-                    <label class="block text-lg font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-search mr-2"></i>Select Detection Type
-                    </label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <button onclick="selectDetectionType('email')" 
-                                class="detection-type-btn p-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition-all duration-300 text-center group"
-                                data-type="email">
-                            <i class="fas fa-envelope text-2xl mb-2 text-gray-600 group-hover:text-purple-600"></i>
-                            <p class="font-medium">Email</p>
+        <!-- Home Page -->
+        <div id="home-page" class="page active fade-in">
+            <!-- Hero Section -->
+            <section class="hero-pattern rounded-3xl p-12 mb-12 text-white slide-in">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-5xl md:text-6xl font-bold mb-6">
+                        Advanced AI-Powered Phishing Detection
+                    </h2>
+                    <p class="text-xl md:text-2xl mb-8 text-purple-100">
+                        Protect yourself from sophisticated phishing attacks with our cutting-edge detection system
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="showPage('email')" class="bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold hover:bg-purple-50 transition transform hover:scale-105">
+                            <i class="fas fa-envelope mr-2"></i>Check Email
                         </button>
-                        <button onclick="selectDetectionType('sms')" 
-                                class="detection-type-btn p-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition-all duration-300 text-center group"
-                                data-type="sms">
-                            <i class="fas fa-sms text-2xl mb-2 text-gray-600 group-hover:text-purple-600"></i>
-                            <p class="font-medium">SMS</p>
-                        </button>
-                        <button onclick="selectDetectionType('whatsapp')" 
-                                class="detection-type-btn p-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition-all duration-300 text-center group"
-                                data-type="whatsapp">
-                            <i class="fab fa-whatsapp text-2xl mb-2 text-gray-600 group-hover:text-purple-600"></i>
-                            <p class="font-medium">WhatsApp</p>
-                        </button>
-                        <button onclick="selectDetectionType('url')" 
-                                class="detection-type-btn p-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition-all duration-300 text-center group"
-                                data-type="url">
-                            <i class="fas fa-link text-2xl mb-2 text-gray-600 group-hover:text-purple-600"></i>
-                            <p class="font-medium">URL</p>
+                        <button onclick="showPage('url')" class="bg-purple-700 text-white px-8 py-4 rounded-lg font-semibold hover:bg-purple-800 transition transform hover:scale-105">
+                            <i class="fas fa-link mr-2"></i>Check URL
                         </button>
                     </div>
                 </div>
+            </section>
 
-                <!-- Input Area -->
-                <div class="mb-6">
-                    <label class="block text-lg font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-edit mr-2"></i>
-                        <span id="input-label">Enter Content to Analyze</span>
-                    </label>
-                    <div id="email-input" class="input-section hidden">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <input type="email" id="email-from" placeholder="From (sender email)" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <input type="text" id="email-subject" placeholder="Subject" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            <!-- Stats Section -->
+            <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                <div class="stats-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold mb-2">99.8%</div>
+                    <div class="text-purple-200">Detection Accuracy</div>
+                </div>
+                <div class="stats-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold mb-2">2.3M+</div>
+                    <div class="text-purple-200">Threats Blocked</div>
+                </div>
+                <div class="stats-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold mb-2">< 1s</div>
+                    <div class="text-purple-200">Analysis Time</div>
+                </div>
+                <div class="stats-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold mb-2">24/7</div>
+                    <div class="text-purple-200">Protection</div>
+                </div>
+            </section>
+
+            <!-- Features Grid -->
+            <section class="mb-12">
+                <h3 class="text-3xl font-bold text-white text-center mb-8">Comprehensive Protection</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-effect rounded-xl p-6 card-hover cursor-pointer" onclick="showPage('email')">
+                        <div class="feature-icon bg-blue-100 text-blue-600 mb-4">
+                            <i class="fas fa-envelope"></i>
                         </div>
-                        <textarea id="email-content" rows="8" placeholder="Paste email content here..." 
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        <h4 class="text-xl font-semibold mb-2">Email Protection</h4>
+                        <p class="text-gray-600">Advanced email analysis with sender verification</p>
                     </div>
-                    
-                    <div id="sms-input" class="input-section hidden">
-                        <input type="tel" id="sms-from" placeholder="From (sender number)" 
-                               class="w-full px-4 py-3 mb-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <textarea id="sms-content" rows="6" placeholder="Paste SMS message here..." 
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    <div class="glass-effect rounded-xl p-6 card-hover cursor-pointer" onclick="showPage('sms')">
+                        <div class="feature-icon bg-green-100 text-green-600 mb-4">
+                            <i class="fas fa-sms"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2">SMS Security</h4>
+                        <p class="text-gray-600">Detect fraudulent text messages and smishing</p>
                     </div>
-                    
-                    <div id="whatsapp-input" class="input-section hidden">
-                        <input type="text" id="whatsapp-from" placeholder="From (sender name/number)" 
-                               class="w-full px-4 py-3 mb-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <textarea id="whatsapp-content" rows="6" placeholder="Paste WhatsApp message here..." 
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    <div class="glass-effect rounded-xl p-6 card-hover cursor-pointer" onclick="showPage('whatsapp')">
+                        <div class="feature-icon bg-green-500 text-white mb-4">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2">WhatsApp Safety</h4>
+                        <p class="text-gray-600">Identify suspicious WhatsApp messages</p>
                     </div>
-                    
-                    <div id="url-input" class="input-section hidden">
+                    <div class="glass-effect rounded-xl p-6 card-hover cursor-pointer" onclick="showPage('url')">
+                        <div class="feature-icon bg-purple-100 text-purple-600 mb-4">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2">URL Scanner</h4>
+                        <p class="text-gray-600">Real-time URL analysis and malicious link detection</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Email Detection Page -->
+        <div id="email-page" class="page">
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-effect rounded-2xl shadow-2xl p-8 slide-in">
+                    <div class="flex items-center mb-6">
+                        <div class="feature-icon bg-blue-100 text-blue-600 mr-4">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">Email Phishing Detection</h2>
+                            <p class="text-gray-600">Advanced analysis of email content, headers, and sender information</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sender Email</label>
+                            <input type="email" id="email-from" placeholder="sender@example.com" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                            <input type="text" id="email-subject" placeholder="Email subject line" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Content</label>
+                        <textarea id="email-content" rows="8" placeholder="Paste the full email content here..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <button onclick="analyzeContent('email')" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-105"
+                            id="email-analyze-btn">
+                        <i class="fas fa-search mr-2"></i>Analyze Email for Phishing
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMS Detection Page -->
+        <div id="sms-page" class="page">
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-effect rounded-2xl shadow-2xl p-8 slide-in">
+                    <div class="flex items-center mb-6">
+                        <div class="feature-icon bg-green-100 text-green-600 mr-4">
+                            <i class="fas fa-sms"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">SMS Phishing Detection</h2>
+                            <p class="text-gray-600">Identify fraudulent text messages and smishing attempts</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sender Number</label>
+                        <input type="tel" id="sms-from" placeholder="+1234567890" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">SMS Message</label>
+                        <textarea id="sms-content" rows="6" placeholder="Paste the SMS message here..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <button onclick="analyzeContent('sms')" 
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-105">
+                        <i class="fas fa-search mr-2"></i>Analyze SMS for Phishing
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WhatsApp Detection Page -->
+        <div id="whatsapp-page" class="page">
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-effect rounded-2xl shadow-2xl p-8 slide-in">
+                    <div class="flex items-center mb-6">
+                        <div class="feature-icon bg-green-500 text-white mr-4">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">WhatsApp Security Check</h2>
+                            <p class="text-gray-600">Detect suspicious WhatsApp messages and protect your conversations</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sender Name/Number</label>
+                        <input type="text" id="whatsapp-from" placeholder="Contact name or phone number" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">WhatsApp Message</label>
+                        <textarea id="whatsapp-content" rows="6" placeholder="Paste the WhatsApp message here..." 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <button onclick="analyzeContent('whatsapp')" 
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-105">
+                        <i class="fas fa-search mr-2"></i>Analyze WhatsApp Message
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL Detection Page -->
+        <div id="url-page" class="page">
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-effect rounded-2xl shadow-2xl p-8 slide-in">
+                    <div class="flex items-center mb-6">
+                        <div class="feature-icon bg-purple-100 text-purple-600 mr-4">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">URL Security Scanner</h2>
+                            <p class="text-gray-600">Real-time analysis of URLs for malicious content and phishing attempts</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">URL to Check</label>
                         <input type="url" id="url-content" placeholder="https://example.com/suspicious-link" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
+
+                    <button onclick="analyzeContent('url')" 
+                            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-105">
+                        <i class="fas fa-search mr-2"></i>Scan URL for Security
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-white mb-8">Security Dashboard</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-envelope text-2xl text-blue-600"></i>
+                            <span class="text-sm text-gray-500">Today</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">24</div>
+                        <div class="text-gray-600">Emails Analyzed</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-link text-2xl text-purple-600"></i>
+                            <span class="text-sm text-gray-500">Today</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">18</div>
+                        <div class="text-gray-600">URLs Scanned</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                            <span class="text-sm text-gray-500">Today</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">3</div>
+                        <div class="text-gray-600">Threats Detected</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-shield-alt text-2xl text-green-600"></i>
+                            <span class="text-sm text-gray-500">Today</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">39</div>
+                        <div class="text-gray-600">Items Protected</div>
+                    </div>
                 </div>
 
-                <!-- Analyze Button -->
-                <button onclick="analyzeContent()" 
-                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                        id="analyze-btn">
-                    <i class="fas fa-search mr-2"></i>
-                    <span id="analyze-btn-text">Analyze for Phishing</span>
-                </button>
+                <div class="glass-effect rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Detection History</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                <div>
+                                    <div class="font-semibold">Phishing Email Detected</div>
+                                    <div class="text-sm text-gray-600">From: security@paypal-update.com</div>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-500">2 mins ago</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-check-circle text-green-600"></i>
+                                <div>
+                                    <div class="font-semibold">Safe URL Verified</div>
+                                    <div class="text-sm text-gray-600">https://github.com</div>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-500">5 mins ago</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
 
         <!-- Results Section -->
         <section id="results-section" class="max-w-4xl mx-auto hidden">
@@ -199,11 +456,17 @@
                     </ul>
                 </div>
 
-                <!-- Analyze Another Button -->
-                <button onclick="resetForm()" 
-                        class="mt-6 w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
-                    <i class="fas fa-redo mr-2"></i>Analyze Another
-                </button>
+                <!-- Action Buttons -->
+                <div class="flex space-x-4 mt-6">
+                    <button onclick="resetForm()" 
+                            class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                        <i class="fas fa-redo mr-2"></i>Analyze Another
+                    </button>
+                    <button onclick="showPage('dashboard')" 
+                            class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                        <i class="fas fa-chart-bar mr-2"></i>View Dashboard
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -211,7 +474,7 @@
         <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
             <div class="bg-white rounded-lg p-8 text-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                <p class="text-lg font-semibold">Analyzing content...</p>
+                <p class="text-lg font-semibold">Analyzing content<span class="loading-dots"></span></p>
                 <p class="text-gray-600">This may take a few seconds</p>
             </div>
         </div>

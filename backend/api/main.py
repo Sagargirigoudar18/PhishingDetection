@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import detection
-from ..core.config import settings
+from api.routes import detection
+from core.config import settings
 import logging
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,6 +29,15 @@ app.include_router(detection.router, prefix="/api/detect", tags=["detection"])
 @app.get("/")
 async def root():
     return {"message": "Phishing Detection API is running"}
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for frontend"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0.0"
+    }
 
 if __name__ == "__main__":
     import uvicorn

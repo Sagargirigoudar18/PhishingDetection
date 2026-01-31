@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import logging
-from ...ml.classifier_simple import PhishingClassifier
-from ...features.url_analyzer_simple import URLAnalyzer
-from ...genai.explainer_simple import PhishingExplainer
+from ml.classifier_simple import PhishingClassifier
+from features.url_analyzer_simple import URLAnalyzer
+from genai.explainer_simple import PhishingExplainer
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

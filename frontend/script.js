@@ -1,11 +1,12 @@
 // Global variables
 let selectedDetectionType = null;
-const API_BASE_URL = 'http://localhost:8000';
+let currentPage = 'home';
+const API_BASE_URL = 'http://localhost:8080';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
-    // Set default detection type
-    selectDetectionType('email');
+    // Set default page
+    showPage('home');
     
     // Test API connection on load
     testAPIConnection();
@@ -23,26 +24,38 @@ async function testAPIConnection() {
     connectionStatus.className = 'flex items-center space-x-2 px-3 py-1 rounded-full bg-yellow-100';
     
     try {
-        const response = await fetch(`${API_BASE_URL}/health`);
+        console.log('Testing connection to:', `${API_BASE_URL}/health`);
+        const response = await fetch(`${API_BASE_URL}/health`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
         if (response.ok) {
-            console.log('✅ Backend API is connected');
+            const data = await response.json();
+            console.log('✅ Backend API is connected:', data);
             statusIcon.className = 'fas fa-circle text-green-500 text-xs';
             statusText.textContent = 'Connected';
             connectionStatus.className = 'flex items-center space-x-2 px-3 py-1 rounded-full bg-green-100';
             showNotification('Backend connected successfully', 'success');
         } else {
-            console.warn('⚠️ Backend API responded with error');
+            console.warn('⚠️ Backend API responded with error:', response.status);
             statusIcon.className = 'fas fa-circle text-red-500 text-xs';
             statusText.textContent = 'Error';
             connectionStatus.className = 'flex items-center space-x-2 px-3 py-1 rounded-full bg-red-100';
-            showNotification('Backend API may not be running properly', 'warning');
+            showNotification(`Backend API responded with status: ${response.status}`, 'warning');
         }
     } catch (error) {
         console.error('❌ Cannot connect to backend API:', error);
         statusIcon.className = 'fas fa-circle text-red-500 text-xs';
         statusText.textContent = 'Disconnected';
         connectionStatus.className = 'flex items-center space-x-2 px-3 py-1 rounded-full bg-red-100';
-        showNotification('Backend API is not running. Please start the backend server first.', 'error');
+        showNotification(`Backend API is not running. Error: ${error.message}`, 'error');
     }
 }
 
@@ -76,45 +89,33 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
-// Select detection type
-function selectDetectionType(type) {
-    selectedDetectionType = type;
-    
-    // Update button styles
-    document.querySelectorAll('.detection-type-btn').forEach(btn => {
-        btn.classList.remove('border-purple-500', 'bg-purple-50');
-        btn.classList.add('border-gray-200');
+// Page navigation
+function showPage(pageName) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
     });
     
-    const selectedBtn = document.querySelector(`[data-type="${type}"]`);
-    selectedBtn.classList.remove('border-gray-200');
-    selectedBtn.classList.add('border-purple-500', 'bg-purple-50');
-    
-    // Hide all input sections
-    document.querySelectorAll('.input-section').forEach(section => {
-        section.classList.add('hidden');
-    });
-    
-    // Show relevant input section and update label
-    const inputLabel = document.getElementById('input-label');
-    switch(type) {
-        case 'email':
-            document.getElementById('email-input').classList.remove('hidden');
-            inputLabel.textContent = 'Enter Email Details';
-            break;
-        case 'sms':
-            document.getElementById('sms-input').classList.remove('hidden');
-            inputLabel.textContent = 'Enter SMS Message';
-            break;
-        case 'whatsapp':
-            document.getElementById('whatsapp-input').classList.remove('hidden');
-            inputLabel.textContent = 'Enter WhatsApp Message';
-            break;
-        case 'url':
-            document.getElementById('url-input').classList.remove('hidden');
-            inputLabel.textContent = 'Enter URL to Check';
-            break;
+    // Show selected page
+    const selectedPage = document.getElementById(`${pageName}-page`);
+    if (selectedPage) {
+        selectedPage.classList.add('active');
+        currentPage = pageName;
     }
+    
+    // Update navigation active state
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-page') === pageName) {
+            link.classList.add('active');
+        }
+    });
+    
+    // Hide results section when switching pages
+    document.getElementById('results-section').classList.add('hidden');
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Get content based on selected type
@@ -198,7 +199,9 @@ function hideLoading() {
 }
 
 // Analyze content
-async function analyzeContent() {
+async function analyzeContent(type) {
+    selectedDetectionType = type;
+    
     if (!validateInput()) {
         return;
     }
@@ -229,7 +232,7 @@ async function analyzeContent() {
         
     } catch (error) {
         console.error('Error:', error);
-        alert('Error analyzing content. Please make sure the backend server is running on http://localhost:8000');
+        showNotification('Error analyzing content. Please make sure the backend server is running on http://localhost:8000', 'error');
     } finally {
         hideLoading();
     }
@@ -237,8 +240,10 @@ async function analyzeContent() {
 
 // Display results
 function displayResults(result) {
-    // Hide form, show results
-    document.querySelector('section.max-w-4xl:nth-child(2)').classList.add('hidden');
+    // Hide all pages, show results
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
     document.getElementById('results-section').classList.remove('hidden');
     
     // Update risk score
@@ -296,26 +301,32 @@ function displayResults(result) {
         recommendationsList.appendChild(li);
     });
     
+    // Add to history (simulate)
+    addToDetectionHistory(selectedDetectionType, result);
+    
     // Scroll to results
     document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Reset form
 function resetForm() {
-    // Show form, hide results
-    document.querySelector('section.max-w-4xl:nth-child(2)').classList.remove('hidden');
-    document.getElementById('results-section').classList.add('hidden');
+    // Hide results, show home page
+    showPage('home');
     
     // Clear all inputs
     document.querySelectorAll('input, textarea').forEach(input => {
         input.value = '';
     });
     
-    // Reset to default detection type
-    selectDetectionType('email');
-    
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Add to detection history (simulation)
+function addToDetectionHistory(type, result) {
+    // This would normally save to a database
+    // For now, we'll just update the dashboard display
+    console.log(`Added ${type} detection to history:`, result);
 }
 
 // Add keyboard shortcuts

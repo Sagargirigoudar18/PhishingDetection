@@ -15,11 +15,14 @@ class Settings:
         self.DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./phishshield.db")
         
         # Security
-        self.ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours
+        try:
+            self.ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours
+        except (ValueError, TypeError):
+            self.ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # fallback to 24 hours
         self.ALGORITHM = os.getenv("ALGORITHM", "HS256")
         
         # CORS
-        cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
+        cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:8000,http://127.0.0.1:8000")
         self.CORS_ORIGINS = [origin.strip() for origin in cors_origins.split(",")]
         
         # OpenAI
